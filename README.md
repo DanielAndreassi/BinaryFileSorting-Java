@@ -73,4 +73,4 @@ A seguinte tabela será gerada e gravada em arquivo texto:
 - *Comp. Prog.*: Comparações realizadas no programa (apenas envolvendo o campo "Numero")
 - *Comp. Equa.*: Valor das equações de complexidade (não disponível para Shell em diante)
 - *Mov. Prog.*: Movimentações no programa (permutação = 2 movimentações)
-- *Mov. Equa.*: Valor das equações de complexidade (não disponível para Shell em diante)
+- *Mov. Equa.*: Valor das equações de complexidade (não disponível para Shell em diante).

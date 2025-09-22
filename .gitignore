@@ -27,3 +27,8 @@ bin/
 .idea
 ### Mac OS ###
 .DS_Store
+
+
+### Aquivos ###
+*.dat
+*.txt

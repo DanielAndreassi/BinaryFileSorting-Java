@@ -362,6 +362,35 @@ public class Principal {
             bw.write(line.toString());
             quebraLinhaTabela(bw);
 
+            // Bucket
+            System.out.println("Bucket");
+            line = new StringBuilder("| Bucket                 | ");
+            arqOrd.initComp();
+            arqOrd.initMov();
+            tini = System.currentTimeMillis();
+            arqOrd.bucketSort();
+            tfim = System.currentTimeMillis();
+            appendFirstSection(line, (tfim - tini) / 1000, arqOrd, 0, 0);
+
+            auxRev.initComp();
+            auxRev.initMov();
+            auxRev.copiarArquivo(arqRev);
+            tini = System.currentTimeMillis();
+            auxRev.bucketSort();
+            tfim = System.currentTimeMillis();
+            appendMiddleSection(line, (tfim - tini) / 1000, auxRev, 0, 0);
+
+            auxRand.initComp();
+            auxRand.initMov();
+            auxRand.copiarArquivo(arqRand);
+            tini = System.currentTimeMillis();
+            auxRand.bucketSort();
+            tfim = System.currentTimeMillis();
+            appendLastSection(line, (tfim - tini) / 1000, auxRand, 0, 0);
+
+            bw.write(line.toString());
+            quebraLinhaTabela(bw);
+
             // Gnome
             System.out.println("Gnome");
             line = new StringBuilder("| Gnome                 | ");
@@ -389,9 +418,7 @@ public class Principal {
             appendLastSection(line, (tfim - tini) / 1000, auxRand, 0, 0);
 
             bw.write(line.toString());
-            quebraLinhaTabela(bw);
-
-            quebraLinhaTabela(bw);
+            quebraLinhaTabela(bw); 
 
         } catch (IOException ignored) {
         }

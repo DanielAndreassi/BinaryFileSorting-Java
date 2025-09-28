@@ -1,10 +1,12 @@
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+
 import java.io.IOException;
 
-public class Main {
-    public static void main(String[] args) {
+ public class Main {
+    public static void main(String[] args) throws IOException {
         Principal principal = new Principal();
-        principal.geraTabela();
+        
+        principal.gerarTabela();
+        // principal.executeTests();
+        // principal.closeAll();
     }
 }

@@ -1,470 +1,751 @@
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 
 public class Principal {
-    Arquivo arqOrd, arqRev, arqRand, auxRev, auxRand;
+        Arquivo arqOrd, arqRev, arqRand, auxOrd, auxRev, auxRand;
+        RandomAccessFile arquivo;
+        long totalReg = 8, inicio, fim, compOrd, movOrd, compRev, movRev, compRand, movRand, tempoOrd, tempoRev,
+                        tempoRand;
 
-    public Principal() {
-        arqOrd = new Arquivo();
-        arqRev = new Arquivo();
-        arqRand = new Arquivo();
-        auxRev = new Arquivo("reverso.dat");
-        auxRand = new Arquivo("random.dat");
-    }
+        int tam = 8;
 
-    public void geraTabela() {
-        arqOrd.gerarArquivoOrdenado(8);
-        arqRev.gerarArquivoReverso(8);
-        arqRand.gerarArquivoRandomico(8);
-        String nomeArquivoTabela = "TabelaDeEficiencia.txt";
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(nomeArquivoTabela))) {
-            // cabecalho da tabela
-            bw.write(
-                    "|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|\n");
-            bw.write(
-                    "| Métodos de Ordenação  |                               Arquivo Ordenado                                |                             Arquivo em Ordem Reversa                           |                               Arquivo Randômico                               |\n");
-            bw.write(
-                    "| ----------------------|-------------------------------------------------------------------------------|--------------------------------------------------------------------------------|-------------------------------------------------------------------------------|\n");
-            bw.write(
-                    "| Nomes dos Métodos     | Comp. Prog. * | Comp. Equa. # | Mov. Prog. + | Mov. Equa. - |      Tempo      | Comp. Prog. * | Comp. Equa. # | Mov. Prog. + | Mov. Equa. - |      Tempo       | Comp. Prog. * | Comp. Equa. # | Mov. Prog. + | Mov. Equa. - |      Tempo      |\n");
-            bw.write(
-                    "|-----------------------|---------------|---------------|--------------|--------------|-----------------|---------------|---------------|--------------|--------------|------------------|---------------|---------------|--------------|--------------|-----------------|\n");
-
-            // Inserção Direta
-            System.out.println("Inserção Direta");
-            StringBuilder line = new StringBuilder("| Inserção Direta       | ");
-            arqOrd.initComp();
-            arqOrd.initMov();
-            long tini = System.currentTimeMillis();
-            arqOrd.insercaoDireta();
-            long tfim = System.currentTimeMillis();
-            appendFirstSection(line, (tfim - tini) / 1000, arqOrd, arqOrd.filesize() - 1,
-                    3 * (arqOrd.filesize() - 1));
-
-            auxRev.initComp();
-            auxRev.initMov();
-            auxRev.copiarArquivo(arqRev);
-            tini = System.currentTimeMillis();
-            auxRev.insercaoDireta();
-            tfim = System.currentTimeMillis();
-            appendMiddleSection(line, (tfim - tini) / 1000, auxRev,
-                    (int) (Math.pow(arqOrd.filesize(), 2) + arqOrd.filesize() - 2) / 4,
-                    (int) (Math.pow(arqOrd.filesize(), 2) + arqOrd.filesize() * 9 - 10) / 4);
-
-            auxRand.initComp();
-            auxRand.initMov();
-            auxRand.copiarArquivo(arqRand);
-            tini = System.currentTimeMillis();
-            auxRand.insercaoDireta();
-            tfim = System.currentTimeMillis();
-            appendLastSection(line, (tfim - tini) / 1000, auxRand,
-                    (int) (Math.pow(arqOrd.filesize(), 2) + arqOrd.filesize() - 4) / 4,
-                    (int) (Math.pow(arqOrd.filesize(), 2) + arqOrd.filesize() * 3 - 4) / 4);
-
-            bw.write(line.toString());
-            quebraLinhaTabela(bw);
-
-            // Inserção Binária
-            System.out.println("Inserção Binária");
-            line = new StringBuilder("| Inserção Binária      | ");
-            arqOrd.initComp();
-            arqOrd.initMov();
-            tini = System.currentTimeMillis();
-            arqOrd.insercaoBinaria();
-            tfim = System.currentTimeMillis();
-            int comp = (int) (arqOrd.filesize() * (Math.log(arqOrd.filesize()) - Math.log(Math.E) + 0.5));
-            appendFirstSection(line, (tfim - tini) / 1000, arqOrd, comp, 3 * (arqOrd.filesize() - 1));
-
-            auxRev.initComp();
-            auxRev.initMov();
-            auxRev.copiarArquivo(arqRev);
-            tini = System.currentTimeMillis();
-            auxRev.insercaoBinaria();
-            tfim = System.currentTimeMillis();
-            appendMiddleSection(line, (tfim - tini) / 1000, auxRev, comp,
-                    (int) (Math.pow(arqOrd.filesize(), 2) + arqOrd.filesize() * 3 - 4) / 4);
-
-            auxRand.initComp();
-            auxRand.initMov();
-            auxRand.copiarArquivo(arqRand);
-            tini = System.currentTimeMillis();
-            auxRand.insercaoBinaria();
-            tfim = System.currentTimeMillis();
-            appendLastSection(line, (tfim - tini) / 1000, auxRand, comp,
-                    (int) (Math.pow(arqOrd.filesize(), 2) + arqOrd.filesize() * 3 - 4) / 4);
-
-            bw.write(line.toString());
-            quebraLinhaTabela(bw);
-
-            // Seleção Direta
-            System.out.println("Seleção Direta");
-            line = new StringBuilder("| Seleção Direta        | ");
-            arqOrd.initComp();
-            arqOrd.initMov();
-            tini = System.currentTimeMillis();
-            arqOrd.selecaoDireta();
-            tfim = System.currentTimeMillis();
-            comp = (int) (Math.pow(arqOrd.filesize(), 2) - arqOrd.filesize()) / 2;
-            appendFirstSection(line, (tfim - tini) / 1000, arqOrd, comp, 3 * (arqOrd.filesize() - 1));
-
-            auxRev.initComp();
-            auxRev.initMov();
-            auxRev.copiarArquivo(arqRev);
-            tini = System.currentTimeMillis();
-            auxRev.selecaoDireta();
-            tfim = System.currentTimeMillis();
-            appendMiddleSection(line, (tfim - tini) / 1000, auxRev, comp,
-                    (int) (arqRev.filesize() * (Math.log(arqRev.filesize()) * 0.577216)));
-
-            auxRand.initComp();
-            auxRand.initMov();
-            auxRand.copiarArquivo(arqRand);
-            tini = System.currentTimeMillis();
-            auxRand.selecaoDireta();
-            tfim = System.currentTimeMillis();
-            appendLastSection(line, (tfim - tini) / 1000, auxRand, comp,
-                    (int) Math.pow(arqRand.filesize(), 2) / 4 + 3 * (arqRand.filesize() - 1));
-
-            bw.write(line.toString());
-            quebraLinhaTabela(bw);
-
-            // Bolha
-            System.out.println("Bolha");
-            line = new StringBuilder("| Bolha                 | ");
-            arqOrd.initComp();
-            arqOrd.initMov();
-            tini = System.currentTimeMillis();
-            arqOrd.bubbleSort();
-            tfim = System.currentTimeMillis();
-            appendFirstSection(line, (tfim - tini) / 1000, arqOrd, comp, 0);
-
-            auxRev.initComp();
-            auxRev.initMov();
-            auxRev.copiarArquivo(arqRev);
-            tini = System.currentTimeMillis();
-            auxRev.bubbleSort();
-            tfim = System.currentTimeMillis();
-            appendMiddleSection(line, (tfim - tini) / 1000, auxRev, comp,
-                    (int) (3 * (Math.pow(arqRev.filesize(), 2) - arqRev.filesize()) / 4));
-
-            auxRand.initComp();
-            auxRand.initMov();
-            auxRand.copiarArquivo(arqRand);
-            tini = System.currentTimeMillis();
-            auxRand.bubbleSort();
-            tfim = System.currentTimeMillis();
-            appendLastSection(line, (tfim - tini) / 1000, auxRand, comp,
-                    (int) (3 * (Math.pow(arqRev.filesize(), 2) - arqRev.filesize()) / 4));
-
-            bw.write(line.toString());
-            quebraLinhaTabela(bw);
-
-            // Shake
-            System.out.println("Shake");
-            line = new StringBuilder("| Shake                 | ");
-            arqOrd.initComp();
-            arqOrd.initMov();
-            tini = System.currentTimeMillis();
-            arqOrd.shakeSort();
-            tfim = System.currentTimeMillis();
-            appendFirstSection(line, (tfim - tini) / 1000, arqOrd, comp, 0);
-
-            auxRev.initComp();
-            auxRev.initMov();
-            auxRev.copiarArquivo(arqRev);
-            tini = System.currentTimeMillis();
-            auxRev.shakeSort();
-            tfim = System.currentTimeMillis();
-            appendMiddleSection(line, (tfim - tini) / 1000, auxRev, comp,
-                    (int) (3 * (Math.pow(arqRev.filesize(), 2) - arqRev.filesize()) / 4));
-
-            auxRand.initComp();
-            auxRand.initMov();
-            auxRand.copiarArquivo(arqRand);
-            tini = System.currentTimeMillis();
-            auxRand.shakeSort();
-            tfim = System.currentTimeMillis();
-            appendLastSection(line, (tfim - tini) / 1000, auxRand, comp,
-                    (int) (3 * (Math.pow(arqRev.filesize(), 2) - arqRev.filesize()) / 4));
-
-            bw.write(line.toString());
-            quebraLinhaTabela(bw);
-
-            // Shell
-            System.out.println("Shell");
-            line = new StringBuilder("| Shell                 | ");
-            arqOrd.initComp();
-            arqOrd.initMov();
-            tini = System.currentTimeMillis();
-            arqOrd.shellSort();
-            tfim = System.currentTimeMillis();
-            appendFirstSection(line, (tfim - tini) / 1000, arqOrd, 0, 0);
-
-            auxRev.initComp();
-            auxRev.initMov();
-            auxRev.copiarArquivo(arqRev);
-            tini = System.currentTimeMillis();
-            auxRev.shellSort();
-            tfim = System.currentTimeMillis();
-            appendMiddleSection(line, (tfim - tini) / 1000, auxRev, 0, 0);
-
-            auxRand.initComp();
-            auxRand.initMov();
-            auxRand.copiarArquivo(arqRand);
-            tini = System.currentTimeMillis();
-            auxRand.shellSort();
-            tfim = System.currentTimeMillis();
-            appendLastSection(line, (tfim - tini) / 1000, auxRand, 0, 0);
-
-            bw.write(line.toString());
-            quebraLinhaTabela(bw);
-
-            // Heap
-            System.out.println("Heap");
-            line = new StringBuilder("| Heap                  | ");
-            arqOrd.initComp();
-            arqOrd.initMov();
-            tini = System.currentTimeMillis();
-            arqOrd.heapSort();
-            tfim = System.currentTimeMillis();
-            appendFirstSection(line, (tfim - tini) / 1000, arqOrd, 0, 0);
-
-            auxRev.initComp();
-            auxRev.initMov();
-            auxRev.copiarArquivo(arqRev);
-            tini = System.currentTimeMillis();
-            auxRev.heapSort();
-            tfim = System.currentTimeMillis();
-            appendMiddleSection(line, (tfim - tini) / 1000, auxRev, 0, 0);
-
-            auxRand.initComp();
-            auxRand.initMov();
-            auxRand.copiarArquivo(arqRand);
-            tini = System.currentTimeMillis();
-            auxRand.heapSort();
-            tfim = System.currentTimeMillis();
-            appendLastSection(line, (tfim - tini) / 1000, auxRand, 0, 0);
-
-            bw.write(line.toString());
-            quebraLinhaTabela(bw);
-
-            // Quick sem pivo
-            System.out.println("Quick Sem pivô");
-            line = new StringBuilder("| Quick Sem pivô         | ");
-            arqOrd.initComp();
-            arqOrd.initMov();
-            tini = System.currentTimeMillis();
-            arqOrd.quickSortSemPivo();
-            tfim = System.currentTimeMillis();
-            appendFirstSection(line, (tfim - tini) / 1000, arqOrd, 0, 0);
-
-            auxRev.initComp();
-            auxRev.initMov();
-            auxRev.copiarArquivo(arqRev);
-            tini = System.currentTimeMillis();
-            auxRev.quickSortSemPivo();
-            tfim = System.currentTimeMillis();
-            appendMiddleSection(line, (tfim - tini) / 1000, auxRev, 0, 0);
-
-            auxRand.initComp();
-            auxRand.initMov();
-            auxRand.copiarArquivo(arqRand);
-            tini = System.currentTimeMillis();
-            auxRand.quickSortSemPivo();
-            tfim = System.currentTimeMillis();
-            appendLastSection(line, (tfim - tini) / 1000, auxRand, 0, 0);
-
-            bw.write(line.toString());
-            quebraLinhaTabela(bw);
-
-            // Quick com pivo
-            System.out.println("Quick Com pivô");
-            line = new StringBuilder("| Quick Com pivô         | ");
-            arqOrd.initComp();
-            arqOrd.initMov();
-            tini = System.currentTimeMillis();
-            arqOrd.quickSortComPivo();
-            tfim = System.currentTimeMillis();
-            appendFirstSection(line, (tfim - tini) / 1000, arqOrd, 0, 0);
-
-            auxRev.initComp();
-            auxRev.initMov();
-            auxRev.copiarArquivo(arqRev);
-            tini = System.currentTimeMillis();
-            auxRev.quickSortComPivo();
-            tfim = System.currentTimeMillis();
-            appendMiddleSection(line, (tfim - tini) / 1000, auxRev, 0, 0);
-
-            auxRand.initComp();
-            auxRand.initMov();
-            auxRand.copiarArquivo(arqRand);
-            tini = System.currentTimeMillis();
-            auxRand.quickSortComPivo();
-            tfim = System.currentTimeMillis();
-            appendLastSection(line, (tfim - tini) / 1000, auxRand, 0, 0);
-
-            // Counting
-            System.out.println("Counting"); 
-            line = new StringBuilder("| Counting              | ");
-            arqOrd.initComp();
-            arqOrd.initMov();
-            tini = System.currentTimeMillis();
-            arqOrd.countingSort();
-            tfim = System.currentTimeMillis();
-            appendFirstSection(line, (tfim - tini) / 1000, arqOrd, 0, 0);
- 
-            auxRev.initComp();
-            auxRev.initMov();
-            auxRev.copiarArquivo(arqRev);
-            tini = System.currentTimeMillis();
-            auxRev.countingSort();
-            tfim = System.currentTimeMillis();
-            appendMiddleSection(line, (tfim - tini) / 1000, auxRev, 0, 0);
- 
-            auxRand.initComp();
-            auxRand.initMov();
-            auxRand.copiarArquivo(arqRand);
-            tini = System.currentTimeMillis();
-            auxRand.countingSort();
-            tfim = System.currentTimeMillis();
-            appendLastSection(line, (tfim - tini) / 1000, auxRand, 0, 0);
-
-            bw.write(line.toString());
-            quebraLinhaTabela(bw);
-
-            // Comb
-            System.out.println("Comb");
-            line = new StringBuilder("| Comb                  | ");
-            arqOrd.initComp();
-            arqOrd.initMov();
-            tini = System.currentTimeMillis();
-            arqOrd.combSort();
-            tfim = System.currentTimeMillis();
-            appendFirstSection(line, (tfim - tini) / 1000, arqOrd, 0, 0);
-
-            auxRev.initComp();
-            auxRev.initMov();
-            auxRev.copiarArquivo(arqRev);
-            tini = System.currentTimeMillis();
-            auxRev.combSort();
-            tfim = System.currentTimeMillis();
-            appendMiddleSection(line, (tfim - tini) / 1000, auxRev, 0, 0);
-
-            auxRand.initComp();
-            auxRand.initMov();
-            auxRand.copiarArquivo(arqRand);
-            tini = System.currentTimeMillis();
-            auxRand.combSort();
-            tfim = System.currentTimeMillis();
-            appendLastSection(line, (tfim - tini) / 1000, auxRand, 0, 0);
-
-            bw.write(line.toString());
-            quebraLinhaTabela(bw);
-
-            // Gnome
-            System.out.println("Gnome");
-            line = new StringBuilder("| Gnome                 | ");
-            arqOrd.initComp();
-            arqOrd.initMov();
-            tini = System.currentTimeMillis();
-            arqOrd.gnomeSort();
-            tfim = System.currentTimeMillis();
-            appendFirstSection(line, (tfim - tini) / 1000, arqOrd, 0, 0);
-
-            auxRev.initComp();
-            auxRev.initMov();
-            auxRev.copiarArquivo(arqRev);
-            tini = System.currentTimeMillis();
-            auxRev.gnomeSort();
-            tfim = System.currentTimeMillis();
-            appendMiddleSection(line, (tfim - tini) / 1000, auxRev, 0, 0);
-
-            auxRand.initComp();
-            auxRand.initMov();
-            auxRand.copiarArquivo(arqRand);
-            tini = System.currentTimeMillis();
-            auxRand.gnomeSort();
-            tfim = System.currentTimeMillis();
-            appendLastSection(line, (tfim - tini) / 1000, auxRand, 0, 0);
-
-            bw.write(line.toString());
-            quebraLinhaTabela(bw);
-
-            quebraLinhaTabela(bw);
-
-        } catch (IOException ignored) {
+        public Principal() {
+                arqOrd = new Arquivo("ordenado.dat");
+                arqRev = new Arquivo("reverso.dat");
+                arqRand = new Arquivo("random.dat");
+                auxOrd = new Arquivo("aux_ordenado.dat");
+                auxRev = new Arquivo("aux_reverso.dat");
+                auxRand = new Arquivo("aux_random.dat");
         }
-    }
 
-    public static void quebraLinhaTabela(BufferedWriter bw) throws IOException {
-        bw.write(
-                "|_______________________|_______________________________________________________________________________|________________________________________________________________________________|_______________________________________________________________________________|\n");
-    }
+        public void escreverLinha(String ordenacao,
+                        double compOrd, double compEOrd, double movOrd, double movEOrd, double tempoOrd,
+                        double compRev, double compERev, double movRev, double movERev, double tempoRev,
+                        double compRand, double compERand, double movRand, double movERand, double tempoRand) {
 
-    public static void appendFirstSection(StringBuilder line, long tempo, Arquivo arq, int compEqua, int movEqua) {
-        line.append(arq.getComp());
-        line.append(" ".repeat(Math.max(0, 39 - (line.length() - 1))));
-        line.append("| ");
+                String dados = String.format(
+                                "|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|",
+                                centralizarString(ordenacao, 26),
+                                centralizarString(String.valueOf(compOrd), 10),
+                                centralizarString(String.valueOf(compEOrd), 10),
+                                centralizarString(String.valueOf(movOrd), 10),
+                                centralizarString(String.valueOf(movEOrd), 10),
+                                centralizarString(String.valueOf(tempoOrd), 10),
+                                centralizarString(String.valueOf(compRev), 10),
+                                centralizarString(String.valueOf(compERev), 10),
+                                centralizarString(String.valueOf(movRev), 10),
+                                centralizarString(String.valueOf(movERev), 10),
+                                centralizarString(String.valueOf(tempoRev), 10),
+                                centralizarString(String.valueOf(compRand), 10),
+                                centralizarString(String.valueOf(compERand), 10),
+                                centralizarString(String.valueOf(movRand), 10),
+                                centralizarString(String.valueOf(movERand), 10),
+                                centralizarString(String.valueOf(tempoRand), 10));
 
-        line.append(compEqua);
-        line.append(" ".repeat(Math.max(0, 55 - (line.length() - 1))));
-        line.append("| ");
+                String linha = String.format(
+                                """
+                                                |                          |          |          |          |          |          |          |          |          |          |          |          |          |          |          |          |
+                                                %s
+                                                |                          |          |          |          |          |          |          |          |          |          |          |          |          |          |          |          |
+                                                +--------------------------|----------|----------|----------|----------|----------+----------|----------|----------|----------|----------+----------|----------|----------|----------|----------|
+                                                """,
+                                dados);
 
-        line.append(arq.getMov());
-        line.append(" ".repeat(Math.max(0, 70 - (line.length() - 1))));
-        line.append("| ");
+                gravaStringNoArquivo(linha);
+        }
 
-        line.append(movEqua);
-        line.append(" ".repeat(Math.max(0, 85 - (line.length() - 1))));
-        line.append("| ");
+        public void gerarTabela() throws IOException {
+                try {
+                        arquivo = new RandomAccessFile("TabelaDeEficiencia.txt", "rw");
+                        arquivo.setLength(0);
+                } catch (Exception ignored) {
+                }
 
-        line.append(tempo);
-        line.append(" ".repeat(Math.max(0, 103 - (line.length() - 1))));
-        line.append("| ");
-    }
+                escreverCabecalho();
 
-    public static void appendMiddleSection(StringBuilder line, long tempo, Arquivo arq, int compEqua, int movEqua) {
-        line.append(arq.getComp());
-        line.append(" ".repeat(Math.max(0, 119 - (line.length() - 1))));
-        line.append("| ");
+                arqOrd.gerarArquivoOrdenado(this.tam);
+                arqRev.gerarArquivoReverso(this.tam);
+                arqRand.gerarArquivoRandomico(this.tam);
 
-        line.append(compEqua);
-        line.append(" ".repeat(Math.max(0, 135 - (line.length() - 1))));
-        line.append("| ");
+                double compEOrd, movEOrd, compERev, movERev, compERand, movERand;
 
-        line.append(arq.getMov());
-        line.append(" ".repeat(Math.max(0, 150 - (line.length() - 1))));
-        line.append("| ");
+                // =================== INSERCAO DIRETA ===================
+                System.out.println("INSERCAO DIRETA...");
 
-        line.append(movEqua);
-        line.append(" ".repeat(Math.max(0, 165 - (line.length() - 1))));
-        line.append("| ");
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.insercaoDireta();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+                compOrd = auxOrd.getComp();
+                movOrd = auxOrd.getMov();
+                compEOrd = totalReg - 1;
+                movEOrd = 3 * (totalReg - 1);
 
-        line.append(tempo);
-        line.append(" ".repeat(Math.max(0, 184 - (line.length() - 1))));
-        line.append("| ");
-    }
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.insercaoDireta();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+                compRev = auxRev.getComp();
+                movRev = auxRev.getMov();
+                compERev = (totalReg * totalReg + totalReg - 4) / 4;
+                movERev = (totalReg * totalReg + 3 * totalReg - 4) / 2;
 
-    public static void appendLastSection(StringBuilder line, long tempo, Arquivo arq, int compEqua, int movEqua) {
-        line.append(arq.getComp());
-        line.append(" ".repeat(Math.max(0, 200 - (line.length() - 1))));
-        line.append("| ");
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.insercaoDireta();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+                compRand = auxRand.getComp();
+                movRand = auxRand.getMov();
+                compERand = (totalReg * totalReg + totalReg - 2) / 4;
+                movERand = (totalReg * totalReg + 9 * totalReg - 10) / 4;
 
-        line.append(compEqua);
-        line.append(" ".repeat(Math.max(0, 216 - (line.length() - 1))));
-        line.append("| ");
+                escreverLinha("Insercao Direta",
+                                compOrd, compEOrd, movOrd, movEOrd, tempoOrd,
+                                compRev, compERev, movRev, movERev, tempoRev,
+                                compRand, compERand, movRand, movERand, tempoRand);
 
-        line.append(arq.getMov());
-        line.append(" ".repeat(Math.max(0, 231 - (line.length() - 1))));
-        line.append("| ");
+                // =================== SELECAO DIRETA ===================
+                System.out.println("SELECAO DIRETA...");
 
-        line.append(movEqua);
-        line.append(" ".repeat(Math.max(0, 246 - (line.length() - 1))));
-        line.append("| ");
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.selecaoDireta();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+                compOrd = auxOrd.getComp();
+                movOrd = auxOrd.getMov();
+                compEOrd = (totalReg * totalReg - totalReg) / 2;
+                movEOrd = 3 * (totalReg - 1);
 
-        line.append(tempo);
-        line.append(" ".repeat(Math.max(0, 264 - (line.length() - 1))));
-        line.append("|\n");
-    }
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.selecaoDireta();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+                compRev = auxRev.getComp();
+                movRev = auxRev.getMov();
+                compERev = (totalReg * totalReg - totalReg) / 2;
+                movERev = 3 * (totalReg - 1);
+
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.selecaoDireta();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+                compRand = auxRand.getComp();
+                movRand = auxRand.getMov();
+                compERand = (totalReg * totalReg - totalReg) / 2;
+                movERand = 3 * (totalReg - 1);
+
+                escreverLinha("Selecao Direta",
+                                compOrd, compEOrd, movOrd, movEOrd, tempoOrd,
+                                compRev, compERev, movRev, movERev, tempoRev,
+                                compRand, compERand, movRand, movERand, tempoRand);
+
+                // =================== INSERCAO BINARIA ===================
+                System.out.println("INSERCAO BINARIA...");
+
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.insercaoBinaria();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+                compOrd = auxOrd.getComp();
+                movOrd = auxOrd.getMov();
+                compEOrd = (int) (totalReg * (Math.log(totalReg) / Math.log(2)));
+                movEOrd = 3 * (totalReg - 1);
+
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.insercaoBinaria();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+                compRev = auxRev.getComp();
+                movRev = auxRev.getMov();
+                compERev = (int) (totalReg * (Math.log(totalReg) / Math.log(2)));
+                movERev = (totalReg * totalReg + 3 * totalReg - 4) / 2;
+
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.insercaoBinaria();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+                compRand = auxRand.getComp();
+                movRand = auxRand.getMov();
+                compERand = (int) (totalReg * (Math.log(totalReg) / Math.log(2)));
+                movERand = (totalReg * totalReg + 9 * totalReg - 10) / 4;
+
+                escreverLinha("Insercao Binaria",
+                                compOrd, compEOrd, movOrd, movEOrd, tempoOrd,
+                                compRev, compERev, movRev, movERev, tempoRev,
+                                compRand, compERand, movRand, movERand, tempoRand);
+
+                // =================== BUBBLE SORT ===================
+                System.out.println("BUBBLE SORT...");
+
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.bubbleSort();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+                compOrd = auxOrd.getComp();
+                movOrd = auxOrd.getMov();
+                compEOrd = (totalReg * totalReg - totalReg) / 2;
+                movEOrd = 0;
+
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.bubbleSort();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+                compRev = auxRev.getComp();
+                movRev = auxRev.getMov();
+                compERev = (totalReg * totalReg - totalReg) / 2;
+                movERev = 3 * (totalReg * totalReg - totalReg) / 4;
+
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.bubbleSort();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+                compRand = auxRand.getComp();
+                movRand = auxRand.getMov();
+                compERand = (totalReg * totalReg - totalReg) / 2;
+                movERand = 3 * (totalReg * totalReg - totalReg) / 4;
+
+                escreverLinha("Bubble Sort",
+                                compOrd, compEOrd, movOrd, movEOrd, tempoOrd,
+                                compRev, compERev, movRev, movERev, tempoRev,
+                                compRand, compERand, movRand, movERand, tempoRand);
+
+                // =================== SHAKE SORT ===================
+                System.out.println("SHAKE SORT...");
+
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.shakeSort();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+                compOrd = auxOrd.getComp();
+                movOrd = auxOrd.getMov();
+                compEOrd = (totalReg * totalReg - totalReg) / 2;
+                movEOrd = 0;
+
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.shakeSort();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+                compRev = auxRev.getComp();
+                movRev = auxRev.getMov();
+                compERev = (totalReg * totalReg - totalReg) / 2;
+                movERev = 3 * (totalReg * totalReg - totalReg) / 4;
+
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.shakeSort();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+                compRand = auxRand.getComp();
+                movRand = auxRand.getMov();
+                compERand = (totalReg * totalReg - totalReg) / 2;
+                movERand = 3 * (totalReg * totalReg - totalReg) / 4;
+
+                escreverLinha("Shake Sort",
+                                compOrd, compEOrd, movOrd, movEOrd, tempoOrd,
+                                compRev, compERev, movRev, movERev, tempoRev,
+                                compRand, compERand, movRand, movERand, tempoRand);
+
+                // =================== HEAP SORT ===================
+                System.out.println("HEAP SORT...");
+
+                 
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.heapSort();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+                compOrd = auxOrd.getComp();
+                movOrd = auxOrd.getMov();
+                compEOrd = (int) (totalReg * (Math.log(totalReg) / Math.log(2))); // comparação teórica
+                movEOrd = compEOrd; // movimento teórico ≈ comparações
+
+                 
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.heapSort();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+                compRev = auxRev.getComp();
+                movRev = auxRev.getMov();
+                compERev = (int) (totalReg * (Math.log(totalReg) / Math.log(2)));
+                movERev = compERev;
+
+                 
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.heapSort();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+                compRand = auxRand.getComp();
+                movRand = auxRand.getMov();
+                compERand = (int) (totalReg * (Math.log(totalReg) / Math.log(2)));
+                movERand = compERand;
+
+                escreverLinha("Heap Sort",
+                                compOrd, compEOrd, movOrd, movEOrd, tempoOrd,
+                                compRev, compERev, movRev, movERev, tempoRev,
+                                compRand, compERand, movRand, movERand, tempoRand);
+
+                // =================== SHELL SORT ===================
+                System.out.println("SHELL SORT...");
+
+                 
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.shellSort();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+                compOrd = auxOrd.getComp();
+                movOrd = auxOrd.getMov();
+                compEOrd = (int) (totalReg * Math.sqrt(totalReg)); // estimativa teórica
+                movEOrd = compEOrd;
+
+                 
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.shellSort();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+                compRev = auxRev.getComp();
+                movRev = auxRev.getMov();
+                compERev = (int) (totalReg * Math.sqrt(totalReg));
+                movERev = compERev;
+
+                 
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.shellSort();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+                compRand = auxRand.getComp();
+                movRand = auxRand.getMov();
+                compERand = (int) (totalReg * Math.sqrt(totalReg));
+                movERand = compERand;
+
+                escreverLinha("Shell Sort",
+                                compOrd, compEOrd, movOrd, movEOrd, tempoOrd,
+                                compRev, compERev, movRev, movERev, tempoRev,
+                                compRand, compERand, movRand, movERand, tempoRand);
+
+                // =================== QUICK SORT SEM PIVO ===================
+                System.out.println("QUICK SORT SEM PIVO...");
+
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.quickSortSemPivo();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.quickSortSemPivo();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.quickSortSemPivo();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+
+                escreverLinha("Quick Sort sem Pivo",
+                                auxOrd.getComp(), 0, auxOrd.getMov(), 0, tempoOrd,
+                                auxRev.getComp(), 0, auxRev.getMov(), 0, tempoRev,
+                                auxRand.getComp(), 0, auxRand.getMov(), 0, tempoRand);
+
+                // =================== QUICK SORT COM PIVO ===================
+                System.out.println("QUICK SORT COM PIVO...");
+
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.quickSortComPivo();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.quickSortComPivo();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.quickSortComPivo();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+
+                escreverLinha("Quick Sort com Pivo",
+                                auxOrd.getComp(), 0, auxOrd.getMov(), 0, tempoOrd,
+                                auxRev.getComp(), 0, auxRev.getMov(), 0, tempoRev,
+                                auxRand.getComp(), 0, auxRand.getMov(), 0, tempoRand);
+
+                // =================== COUNTING SORT ===================
+                System.out.println("COUNTING SORT...");
+
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.countingSort();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.countingSort();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.countingSort();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+
+                escreverLinha("Counting Sort",
+                                auxOrd.getComp(), 0, auxOrd.getMov(), 0, tempoOrd,
+                                auxRev.getComp(), 0, auxRev.getMov(), 0, tempoRev,
+                                auxRand.getComp(), 0, auxRand.getMov(), 0, tempoRand);
+
+                // =================== BUCKET SORT ===================
+                System.out.println("BUCKET SORT...");
+
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.bucketSort();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.bucketSort();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.bucketSort();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+
+                escreverLinha("Bucket Sort",
+                                auxOrd.getComp(), 0, auxOrd.getMov(), 0, tempoOrd,
+                                auxRev.getComp(), 0, auxRev.getMov(), 0, tempoRev,
+                                auxRand.getComp(), 0, auxRand.getMov(), 0, tempoRand);
+
+                // =================== RADIX SORT ===================
+                System.out.println("RADIX SORT...");
+
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.radixSort();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.radixSort();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.radixSort();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+
+                escreverLinha("Radix Sort",
+                                auxOrd.getComp(), 0, auxOrd.getMov(), 0, tempoOrd,
+                                auxRev.getComp(), 0, auxRev.getMov(), 0, tempoRev,
+                                auxRand.getComp(), 0, auxRand.getMov(), 0, tempoRand);
+
+                // =================== COMB SORT ===================
+                System.out.println("COMB SORT...");
+
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.combSort();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.combSort();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.combSort();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+
+                escreverLinha("Comb Sort",
+                                auxOrd.getComp(), 0, auxOrd.getMov(), 0, tempoOrd,
+                                auxRev.getComp(), 0, auxRev.getMov(), 0, tempoRev,
+                                auxRand.getComp(), 0, auxRand.getMov(), 0, tempoRand);
+
+                // =================== GNOME SORT ===================
+                System.out.println("GNOME SORT...");
+
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.gnomeSort();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.gnomeSort();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.gnomeSort();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+
+                escreverLinha("Gnome Sort",
+                                auxOrd.getComp(), 0, auxOrd.getMov(), 0, tempoOrd,
+                                auxRev.getComp(), 0, auxRev.getMov(), 0, tempoRev,
+                                auxRand.getComp(), 0, auxRand.getMov(), 0, tempoRand);
+
+                // =================== TIM SORT ===================
+                System.out.println("TIM SORT...");
+
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.timSort();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.timSort();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.timSort();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+
+                escreverLinha("Tim Sort",
+                                auxOrd.getComp(), 0, auxOrd.getMov(), 0, tempoOrd,
+                                auxRev.getComp(), 0, auxRev.getMov(), 0, tempoRev,
+                                auxRand.getComp(), 0, auxRand.getMov(), 0, tempoRand);
+        }
+
+        // ----------------------------------------------------------------------
+
+        public void gravaStringNoArquivo(String frase) {
+                try {
+                        arquivo.writeBytes(frase);
+                } catch (IOException ignored) {
+                }
+        }
+
+        public void escreverCabecalho() {
+
+                String cabecalho = """
+                                +--------------------------+------------------------------------------------------+------------------------------------------------------+------------------------------------------------------+
+                                |     Métodos Ordenacao    |                   Arquivo Ordenado                   |                Arquivo em Ordem Reversa              |                    Arquivo Randomico                 |
+                                +--------------------------|----------|----------|----------|----------|----------+----------|----------|----------|----------|----------+----------|----------|----------|----------|----------|
+                                |                          |   Comp.  |   Comp.  |   mov.   |   mov.   |  Tempo   |   Comp.  |   Comp.  |   mov.   |   mov.   |  Tempo   |   Comp.  |   Comp.  |   mov.   |   mov.   |  Tempo   |
+                                |                          |   Prog*  |   equa#  |   Prog*  |   equa#  |          |   Prog*  |   equa#  |   Prog*  |   equa#  |          |   Prog*  |   equa#  |   Prog*  |   equa#  |          |
+                                +--------------------------|----------|----------|----------|----------|----------+----------|----------|----------|----------|----------+----------|----------|----------|----------|----------|
+                                """;
+                gravaStringNoArquivo(cabecalho);
+
+        }
+
+        public static String centralizarString(String texto, int larguraCol) {
+                int totalEspacos, esq, dir;
+                String resultado = "";
+
+                if (texto.length() >= larguraCol)
+                        return texto.substring(0, larguraCol);
+
+                totalEspacos = larguraCol - texto.length();
+                esq = (totalEspacos + 1) / 2;
+                dir = totalEspacos - esq;
+
+                for (int i = 0; i < esq; i++) {
+                        resultado += " ";
+                }
+
+                resultado += texto;
+
+                for (int i = 0; i < dir; i++) {
+                        resultado += " ";
+                }
+
+                return resultado;
+        }
+
+        public void executarTestes() throws IOException {
+                System.out.println("###### TESTE ######");
+                this.arqRand.gerarArquivoRandomico(this.tam);
+
+                String[] ordenacoes = {
+                                "Inserção Direta", "Inserção Binária", "Seleção Direta",
+                                "Bubble Sort", "Shake Sort", "Heap Sort", "Shell Sort",
+                                "Quick Sort sem Pivo", "Quick Sort com Pivo", "Counting Sort",
+                                "Bucket Sort", "Radix Sort", "Comb Sort", "Gnome Sort", "Tim Sort"
+                };
+
+                for (String ordenacao : ordenacoes) {
+                        teste(this.tam, this.arqRand, this.auxRand, ordenacao);
+                }
+        }
+
+        public void teste(int tam, Arquivo arq, Arquivo arqAux, String ordenacao)
+                        throws IOException {
+
+                arqAux.truncate(0);
+                arq.copiarArquivo(arqAux);
+
+                System.out.println("___________________________________");
+                System.out.println(">>>>>>>> Testando '" + ordenacao + "'");
+
+                System.out.print("Desordenado:    ");
+                arqAux.exibir();
+
+                switch (ordenacao) {
+                        case "Inserção Direta" -> arqAux.insercaoDireta();
+                        case "Inserção Binária" -> arqAux.insercaoBinaria();
+                        case "Seleção Direta" -> arqAux.selecaoDireta();
+                        case "Bubble Sort" -> arqAux.bubbleSort();
+                        case "Shake Sort" -> arqAux.shakeSort();
+                        case "Heap Sort" -> arqAux.heapSort();
+                        case "Shell Sort" -> arqAux.shellSort();
+                        case "Quick Sort sem Pivo" -> arqAux.quickSortSemPivo();
+                        case "Quick Sort com Pivo" -> arqAux.quickSortComPivo();
+                        case "Counting Sort" -> arqAux.countingSort();
+                        case "Bucket Sort" -> arqAux.bucketSort();
+                        case "Radix Sort" -> arqAux.radixSort();
+                        case "Comb Sort" -> arqAux.combSort();
+                        case "Gnome Sort" -> arqAux.gnomeSort();
+                        case "Tim Sort" -> arqAux.timSort();
+                        default -> System.out.println("Algoritmo não reconhecido.");
+                }
+
+                System.out.print("Ordenado:    ");
+                arqAux.exibir();
+        }
+
+        public void closeAll() throws IOException {
+                System.out.println("Fechando arqs");
+                arqOrd.close();
+                arqRev.close();
+                arqRand.close();
+                auxOrd.close();
+                auxRev.close();
+                auxRand.close();
+        }
+
 }

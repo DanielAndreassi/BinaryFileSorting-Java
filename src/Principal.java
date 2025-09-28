@@ -5,7 +5,7 @@ import java.io.RandomAccessFile;
 public class Principal {
         Arquivo arqOrd, arqRev, arqRand, auxOrd, auxRev, auxRand;
         RandomAccessFile arquivo;
-        long inicio, fim, compOrd, movOrd, compRev, movRev, compRand, movRand, tempoOrd, tempoRev, 
+        long inicio, fim, compOrd, movOrd, compRev, movRev, compRand, movRand, tempoOrd, tempoRev,
                         tempoRand;
 
         int totalReg = 1024;
@@ -59,7 +59,6 @@ public class Principal {
                 try {
                         arquivo = new RandomAccessFile("TabelaDeEficiencia.txt", "rw");
                         arquivo.setLength(0);
-                } catch (IOException ignored) {
                 } catch (IOException ignored) {
                 }
 

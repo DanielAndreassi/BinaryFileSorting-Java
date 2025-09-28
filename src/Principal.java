@@ -5,10 +5,10 @@ import java.io.RandomAccessFile;
 public class Principal {
         Arquivo arqOrd, arqRev, arqRand, auxOrd, auxRev, auxRand;
         RandomAccessFile arquivo;
-        long totalReg = 2048, inicio, fim, compOrd, movOrd, compRev, movRev, compRand, movRand, tempoOrd, tempoRev,
+        long inicio, fim, compOrd, movOrd, compRev, movRev, compRand, movRand, tempoOrd, tempoRev,
                         tempoRand;
 
-        int tam = 1024;
+        int totalReg = 1024;
 
         public Principal() {
                 arqOrd = new Arquivo("ordenado.dat");
@@ -59,7 +59,7 @@ public class Principal {
                 try {
                         arquivo = new RandomAccessFile("TabelaDeEficiencia.txt", "rw");
                         arquivo.setLength(0);
-                } catch (Exception ignored) {
+                } catch (IOException ignored) {
                 }
 
                 escreverCabecalho();
@@ -492,7 +492,6 @@ public class Principal {
                                 auxRev.getComp(), 0, auxRev.getMov(), 0, tempoRev,
                                 auxRand.getComp(), 0, auxRand.getMov(), 0, tempoRand);
 
-
                 // =================== COUNTING SORT ===================
                 System.out.println("COUNTING SORT...");
 
@@ -740,7 +739,8 @@ public class Principal {
                 String[] ordenacoes = {
                                 "Inserção Direta", "Inserção Binária", "Seleção Direta",
                                 "Bubble Sort", "Shake Sort", "Heap Sort", "Shell Sort",
-                                "Quick Sort sem Pivo", "Quick Sort com Pivo", "MergeSort 1","MergeSort 2","Counting Sort",
+                                "Quick Sort sem Pivo", "Quick Sort com Pivo", "MergeSort 1", "MergeSort 2",
+                                "Counting Sort",
                                 "Bucket Sort", "Radix Sort", "Comb Sort", "Gnome Sort", "Tim Sort"
                 };
 

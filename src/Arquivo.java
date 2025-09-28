@@ -15,9 +15,6 @@ public class Arquivo {
         }
     }
 
-    public Arquivo() {
-    }
-
     public void close() throws IOException {
         arquivo.close();
     }
@@ -502,13 +499,14 @@ public class Arquivo {
     // ==================== PESQUISADOS ============================
 
     public void countingSort() throws IOException {
-        int TL = filesize(), maior = maiorCodigo();
+        int TL = filesize(), maior = maiorCodigo(), pos;
         int[] vet = new int[maior + 1];
         Registro reg = new Registro();
-        Arquivo arqCopia = new Arquivo("counting.dat");
+        Arquivo arqAux = new Arquivo("counting.dat");
 
         seekArq(0);
         for (int i = 0; i < TL; i++) {
+            seekArq(i);
             reg.leDoArq(arquivo);
             vet[reg.getCodigo()]++;
         }
@@ -517,18 +515,22 @@ public class Arquivo {
             vet[i] += vet[i - 1];
         }
 
-        copiarArquivo(arqCopia);
+        copiarArquivo(arqAux);
 
         for (int i = TL - 1; i >= 0; i--) {
-            arqCopia.seekArq(i);
-            reg.leDoArq(arqCopia.getFile());
+            arqAux.seekArq(i);
+            reg.leDoArq(arqAux.getFile());
 
-            seekArq(vet[reg.getCodigo()] - 1);
+            pos = vet[reg.getCodigo()] - 1;
+
+            seekArq(pos);
             reg.gravaNoArq(arquivo);
             mov++;
 
             vet[reg.getCodigo()]--;
         }
+
+        deletarArquivo("counting.dat");
     }
 
     public void bucketSort() throws IOException {
@@ -568,6 +570,52 @@ public class Arquivo {
             buckets[i].deletarArquivo("bucket" + i + ".dat");
         }
     }
+
+    public void radixSort() throws IOException {
+        int maior = maiorCodigo();
+        Arquivo arqAux = new Arquivo("radix_aux.dat");
+        arqAux.truncate(0);
+
+        for (int i = 1; maior / i > 0; i *= 10) {
+            countingSortForRadix(arqAux, i);
+        }
+    }
+
+    public void countingSortForRadix(Arquivo arqAux, int num) throws IOException {
+        int TL = filesize(), pos, digito;
+        int[] vet = new int[10];
+        Registro reg = new Registro();
+
+        for (int i = 0; i < TL; i++) {
+            seekArq(i);
+            reg.leDoArq(this.arquivo);
+            digito = (reg.getCodigo() / num) % 10;
+            vet[digito]++;
+        }
+
+        for (int i = 1; i < vet.length; i++) {
+            vet[i] += vet[i - 1];
+        }
+
+        for (int i = TL - 1; i >= 0; i--) {
+            seekArq(i);
+            reg.leDoArq(this.arquivo);
+
+            digito = (reg.getCodigo() / num) % 10;
+
+            pos = vet[digito] - 1;
+
+            arqAux.seekArq(pos);
+            reg.gravaNoArq(arqAux.getFile());
+            mov++;
+
+            vet[digito]--;
+        }
+
+
+        arqAux.copiarArquivo(this);
+    } 
+    
 
     public void combSort() {
         int TL = filesize(), interval = TL, i;
@@ -632,23 +680,87 @@ public class Arquivo {
         }
     }
 
+    public void timSort() throws IOException {
+        int run = 32, esq, meio, dir, TL = filesize();
+        Arquivo aux = new Arquivo("tim.dat");
+
+        for (int i = 0; i < TL; i += run) {
+            if (i + run < TL)
+                insercaoDiretaForTim(i, i + run);
+            else
+                insercaoDiretaForTim(i, TL);
+        }
+
+        for (int tam = run; tam < TL; tam *= 2) {
+            for (esq = 0; esq < TL; esq += 2 * tam) {
+                meio = esq + tam - 1;
+                if (esq + 2 * tam < TL)
+                    dir = esq + 2 * tam - 1;
+                else
+                    dir = TL - 1;
+                if (meio < dir)
+                    fusao(aux, esq, meio, meio + 1, dir);
+            }
+        }
+
+        deletarArquivo("tim.dat");
+    }
+
+    public void insercaoDiretaForTim(int ini, int fim) {
+        int pos, TL = fim;
+        Registro regAtual = new Registro();
+        Registro regAnt = new Registro();
+
+        for (int i = ini + 1; i < TL; i++) {
+            seekArq(i);
+            regAtual.leDoArq(arquivo);
+
+            pos = i;
+            seekArq(pos - 1);
+            regAnt.leDoArq(arquivo);
+
+            while (pos > ini && regAtual.getCodigo() < regAnt.getCodigo()) {
+                comp++;
+
+                seekArq(pos);
+                regAnt.gravaNoArq(arquivo);
+                mov++;
+
+                pos--;
+
+                if (pos > ini) {
+                    seekArq(pos - 1);
+                    regAnt.leDoArq(arquivo);
+                }
+
+            }
+
+            if (pos > 0)
+                comp++;
+
+            seekArq(pos);
+            regAtual.gravaNoArq(arquivo);
+            mov++;
+        }
+
+    }
+
     // ========================= UTILITARIOS ====================================
 
-    public void gerarArquivoRandomico(int tamanho) {
-        arquivo = new Arquivo("random.dat").getFile();
+    public void gerarArquivoRandomico(int tamanho) throws IOException {
         Registro reg = new Registro();
-        truncate(0);
         Random rand = new Random();
+        truncate(0);
         for (int i = 0; i < tamanho; i++) {
             reg.setCodigo(rand.nextInt(2000) + 1);
             inserirNoFinal(reg);
         }
     }
 
-    public void gerarArquivoOrdenado(int tamanho) {
-        arquivo = new Arquivo("ordenado.dat").getFile();
+    public void gerarArquivoOrdenado(int tamanho) throws IOException {
+        this.truncate(0);
+
         Registro reg = new Registro();
-        truncate(0);
 
         for (int i = 1; i <= tamanho; i++) {
             reg.setCodigo(i);
@@ -656,10 +768,10 @@ public class Arquivo {
         }
     }
 
-    public void gerarArquivoReverso(int tamanho) {
-        arquivo = new Arquivo("reverso.dat").getFile();
+    public void gerarArquivoReverso(int tamanho) throws IOException {
+        this.truncate(0);
+
         Registro reg = new Registro();
-        truncate(0);
 
         for (int i = tamanho; i >= 1; i--) {
             reg.setCodigo(i);
@@ -689,23 +801,100 @@ public class Arquivo {
         File arq = new File(nomeArquivo);
         arq.delete();
     }
+
+    public void copiarArquivo(Arquivo arqDestino) throws IOException {
+        arqDestino.truncate(0); 
+
+        Registro reg = new Registro();
+        for (int i = 0; i < filesize(); i++) {
+            seekArq(i); 
+            reg.leDoArq(this.arquivo);
+
+            arqDestino.seekArq(i);
+            reg.gravaNoArq(arqDestino.getFile());
+        }
+    }
+
+    public void exibir() {
+        Registro reg = new Registro(); 
+        seekArq(0);
+        for (int i = 0; i < filesize(); i++) {
+            reg.leDoArq(getFile());
+            System.out.print(reg.getCodigo() + " ");
+        }
+        System.out.println();
+    }
+
     // ======================== EXTRAS ====================================
 
-    public void copiarArquivo(Arquivo arq) throws IOException {
-
-        if (arq.arquivo == null) {
-            arq.arquivo = new RandomAccessFile("copia.dat", "rw");
-        }
-
-        arq.initComp();
-        arq.initMov();
+    public void fusao(Arquivo arq, int ini1, int fim1, int ini2, int fim2) {
+        int i = ini1, j = ini2, k = 0;
+        Registro regI = new Registro();
+        Registro regJ = new Registro();
         arq.truncate(0);
 
-        seekArq(0);
-        while (!eof()) {
-            Registro reg = new Registro();
-            reg.leDoArq(this.arquivo);
-            reg.gravaNoArq(arq.arquivo);
+        seekArq(i);
+        regI.leDoArq(arquivo);
+        seekArq(j);
+        regJ.leDoArq(arquivo);
+
+        while (i <= fim1 && j <= fim2) {
+            comp++;
+            if (regI.getCodigo() < regJ.getCodigo()) {
+                arq.seekArq(k);
+                regI.gravaNoArq(arq.arquivo);
+                i++;
+                mov++;
+
+                if (i <= fim1) {
+                    seekArq(i);
+                    regI.leDoArq(arquivo);
+                }
+            } else {
+                arq.seekArq(k);
+                regJ.gravaNoArq(arq.arquivo);
+                j++;
+                mov++;
+
+                if (j <= fim2) {
+                    seekArq(j);
+                    regJ.leDoArq(arquivo);
+                }
+            }
+            k++;
+        }
+
+        while (i <= fim1) {
+            arq.seekArq(k);
+            regI.gravaNoArq(arq.arquivo);
+            i++;
+            k++;
+            mov++;
+            if (i <= fim1) {
+                seekArq(i);
+                regI.leDoArq(arquivo);
+            }
+        }
+
+        while (j <= fim2) {
+            arq.seekArq(k);
+            regJ.gravaNoArq(arq.arquivo);
+            j++;
+            k++;
+            mov++;
+            if (j <= fim2) {
+                seekArq(j);
+                regJ.leDoArq(arquivo);
+            }
+        }
+
+        for (int pos = 0; pos < k; pos++) {
+            arq.seekArq(pos);
+            regI.leDoArq(arq.arquivo);
+
+            seekArq(ini1 + pos);
+            regI.gravaNoArq(arquivo);
+            mov++;
         }
     }
 

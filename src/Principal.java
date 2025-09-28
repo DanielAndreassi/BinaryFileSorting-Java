@@ -5,10 +5,10 @@ import java.io.RandomAccessFile;
 public class Principal {
         Arquivo arqOrd, arqRev, arqRand, auxOrd, auxRev, auxRand;
         RandomAccessFile arquivo;
-        long totalReg = 2048, inicio, fim, compOrd, movOrd, compRev, movRev, compRand, movRand, tempoOrd, tempoRev,
+        long inicio, fim, compOrd, movOrd, compRev, movRev, compRand, movRand, tempoOrd, tempoRev,
                         tempoRand;
 
-        int tam = 1024;
+        int totalReg = 2048;
 
         public Principal() {
                 arqOrd = new Arquivo("ordenado.dat");

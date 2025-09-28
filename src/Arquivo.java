@@ -579,6 +579,8 @@ public class Arquivo {
         for (int i = 1; maior / i > 0; i *= 10) {
             countingSortForRadix(arqAux, i);
         }
+        arqAux.close();
+        deletarArquivo("radix_aux.dat");
     }
 
     public void countingSortForRadix(Arquivo arqAux, int num) throws IOException {
@@ -741,6 +743,156 @@ public class Arquivo {
             mov++;
         }
 
+    }
+
+    //particiona o arquivo para o merge sort
+    public void particao (Arquivo arquivo1, Arquivo arquivo2,int tl) {
+        int i, meio = tl / 2;
+        Registro registro = new Registro();
+
+        seekArq(0);
+
+        for(i = 0; i < meio; i++) {
+            registro.leDoArq(arquivo);
+            arquivo1.inserirNoFinal(registro);
+        }
+
+        for(i = meio; i < tl; i++) {
+            registro.leDoArq(arquivo);
+            arquivo2.inserirNoFinal(registro);
+        }
+    }
+
+    public void fusaoMergeSortPI(Arquivo arquivo1, Arquivo arquivo2, int tl, int sequencia) {
+        int i,j,k,sum = sequencia;
+        Registro registroI = new Registro();
+        Registro registroJ = new Registro();
+
+        truncate(0);
+        for(i = j = k = 0; k<tl;) {
+            arquivo1.seekArq(i);
+            registroI.leDoArq(arquivo1.arquivo);
+            arquivo2.seekArq(j);
+            registroJ.leDoArq(arquivo2.arquivo);
+            while(i < sequencia && j < sequencia) {
+                comp++;
+                if(registroI.getCodigo() < registroJ.getCodigo()) {
+                    inserirNoFinal(registroI);
+                    i++;
+                    registroI.leDoArq(arquivo1.arquivo);
+                }
+                else {
+                    inserirNoFinal(registroJ);
+                    j++;
+                    registroJ.leDoArq(arquivo2.arquivo);
+                }
+                k++;
+            }
+            arquivo1.seekArq(i);
+            while(i < sequencia) {
+                registroI.leDoArq(arquivo1.arquivo);
+                inserirNoFinal(registroI);
+                i++;
+                k++;
+            }
+            arquivo2.seekArq(j);
+            while(j < sequencia) {
+                registroJ.leDoArq(arquivo2.arquivo);
+                inserirNoFinal(registroJ);
+                j++;
+                k++;
+            }
+            sequencia += sum;
+        }
+    }
+
+    public void mergeSortPI() throws IOException {
+        int sequencia = 1, tl = filesize();
+        Arquivo arquivo1 = new Arquivo("merge1.dat");
+        Arquivo arquivo2 = new Arquivo("merge2.dat");
+
+        while(sequencia < tl) {
+            arquivo1.truncate(0);
+            arquivo2.truncate(0);
+            particao(arquivo1, arquivo2, tl);
+            fusaoMergeSortPI(arquivo1, arquivo2, tl, sequencia);
+            sequencia *= 2;
+        }
+        arquivo1.close();
+        arquivo2.close();
+        File arquivo1Delete = new File("merge1.dat");
+        arquivo1Delete.delete();
+        File arquivo2Delete = new File("merge2.dat");
+        arquivo2Delete.delete();
+    }
+
+    public void fusaoSI(Arquivo arq, int inicio1, int fim1, int inicio2, int fim2) {
+        int i = inicio1, j = inicio2, k = 0;
+        Registro registroI = new Registro();
+        Registro registroJ = new Registro();
+
+        arq.seekArq(k);
+        seekArq(i);
+        registroI.leDoArq(arquivo);
+        seekArq(j);
+        registroJ.leDoArq(arquivo);
+
+        while(i <= fim1 && j <= fim2) {
+            comp++;
+            if(registroI.getCodigo() < registroJ.getCodigo()) {
+                registroI.gravaNoArq(arq.arquivo); mov++;
+                seekArq(++i);
+                registroI.leDoArq(arquivo);
+            }
+            else {
+                registroJ.gravaNoArq(arq.arquivo); mov++;
+                seekArq(++j);
+                registroJ.leDoArq(arquivo);
+            }
+            k++;
+        }
+        seekArq(i);
+        registroI.leDoArq(arquivo);
+        while(i <= fim1) {
+            registroI.gravaNoArq(arq.arquivo); mov++;
+            registroI.leDoArq(arquivo);
+            i++;
+            k++;
+        }
+        seekArq(j);
+        registroJ.leDoArq(arquivo);
+        while(j <= fim2) {
+            registroJ.gravaNoArq(arq.arquivo); mov++;
+            registroJ.leDoArq(arquivo);
+            j++;
+            k++;
+        }
+
+        seekArq(inicio1);
+        arq.seekArq(0);
+
+        for(i = 0; i < k; i++) {
+            registroI.leDoArq(arq.arquivo);
+            registroI.gravaNoArq(arquivo); mov++;
+        }
+    }
+
+    public void mergeSortSegundaImplementacaoRec(Arquivo arq, int esquerda, int direita){
+        if(esquerda < direita) {
+            int meio = (esquerda + direita) / 2;
+            mergeSortSegundaImplementacaoRec(arq, esquerda, meio);
+            mergeSortSegundaImplementacaoRec(arq, meio + 1, direita);
+            fusaoSI(arq, esquerda, meio, meio + 1, direita);
+        }
+    }
+
+    public void mergeSortSegundaImplementacao() throws IOException {
+        int tl = filesize();
+        Arquivo arquivo1 = new Arquivo("merge1.dat");
+        mergeSortSegundaImplementacaoRec(arquivo1, 0, tl - 1);
+        arquivo1.close();
+        File arquivo1Delete = new File("merge1.dat");
+        arquivo1Delete.delete();
     }
 
     // ========================= UTILITARIOS ====================================

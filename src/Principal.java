@@ -5,9 +5,7 @@ import java.io.RandomAccessFile;
 public class Principal {
         Arquivo arqOrd, arqRev, arqRand, auxOrd, auxRev, auxRand;
         RandomAccessFile arquivo;
-        long inicio, fim, compOrd, movOrd, compRev, movRev, compRand, movRand, tempoOrd, tempoRev,
-                        tempoRand;
-
+        long inicio, fim, compOrd, movOrd, compRev, movRev, compRand, movRand, tempoOrd, tempoRev, tempoRand;
         int totalReg = 1024;
 
         public Principal() {
@@ -19,7 +17,7 @@ public class Principal {
                 auxRand = new Arquivo("aux_random.dat");
         }
 
-        public void escreverLinha(String ordenacao,
+        private void escreverLinha(String ordenacao,
                         double compOrd, double compEOrd, double movOrd, double movEOrd, double tempoOrd,
                         double compRev, double compERev, double movRev, double movERev, double tempoRev,
                         double compRand, double compERand, double movRand, double movERand, double tempoRand) {
@@ -69,7 +67,6 @@ public class Principal {
                 arqRand.gerarArquivoRandomico(totalReg);
 
                 double compEOrd, movEOrd, compERev, movERev, compERand, movERand;
-
                 // =================== INSERCAO DIRETA ===================
                 System.out.println("INSERCAO DIRETA...");
 
@@ -687,14 +684,14 @@ public class Principal {
 
         // ----------------------------------------------------------------------
 
-        public void gravaStringNoArquivo(String frase) {
+        private void gravaStringNoArquivo(String frase) {
                 try {
                         arquivo.writeBytes(frase);
                 } catch (IOException ignored) {
                 }
         }
 
-        public void escreverCabecalho() {
+        private void escreverCabecalho() {
 
                 String cabecalho = """
                                 +--------------------------+------------------------------------------------------+------------------------------------------------------+------------------------------------------------------+
@@ -708,7 +705,7 @@ public class Principal {
 
         }
 
-        public static String centralizarString(String texto, int larguraCol) {
+        private static String centralizarString(String texto, int larguraCol) {
                 int totalEspacos, esq, dir;
                 String resultado = "";
 
@@ -749,7 +746,7 @@ public class Principal {
                 }
         }
 
-        public void teste(int tam, Arquivo arq, Arquivo arqAux, String ordenacao)
+        private void teste(int tam, Arquivo arq, Arquivo arqAux, String ordenacao)
                         throws IOException {
 
                 arqAux.truncate(0);

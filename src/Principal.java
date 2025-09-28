@@ -56,7 +56,7 @@ public class Principal {
                 try {
                         arquivo = new RandomAccessFile("TabelaDeEficiencia.txt", "rw");
                         arquivo.setLength(0);
-                } catch (Exception ignored) {
+                } catch (IOException ignored) {
                 }
 
                 escreverCabecalho();

@@ -4,10 +4,8 @@ import java.io.RandomAccessFile;
 public class Principal {
         Arquivo arqOrd, arqRev, arqRand, auxOrd, auxRev, auxRand;
         RandomAccessFile arquivo;
-        long totalReg = 8, inicio, fim, compOrd, movOrd, compRev, movRev, compRand, movRand, tempoOrd, tempoRev,
-                        tempoRand;
-
-        int tam = 8;
+        long inicio, fim, compOrd, movOrd, compRev, movRev, compRand, movRand, tempoOrd, tempoRev,tempoRand;
+        int totalReg = 128;
 
         public Principal() {
                 arqOrd = new Arquivo("ordenado.dat");
@@ -63,9 +61,9 @@ public class Principal {
 
                 escreverCabecalho();
 
-                arqOrd.gerarArquivoOrdenado(this.tam);
-                arqRev.gerarArquivoReverso(this.tam);
-                arqRand.gerarArquivoRandomico(this.tam);
+                arqOrd.gerarArquivoOrdenado(totalReg);
+                arqRev.gerarArquivoReverso(totalReg);
+                arqRand.gerarArquivoRandomico(totalReg);
 
                 double compEOrd, movEOrd, compERev, movERev, compERand, movERand;
 
@@ -292,7 +290,6 @@ public class Principal {
                 // =================== HEAP SORT ===================
                 System.out.println("HEAP SORT...");
 
-                 
                 arqOrd.copiarArquivo(auxOrd);
                 auxOrd.initComp();
                 auxOrd.initMov();
@@ -302,10 +299,9 @@ public class Principal {
                 tempoOrd = (fim - inicio) / 1000;
                 compOrd = auxOrd.getComp();
                 movOrd = auxOrd.getMov();
-                compEOrd = (int) (totalReg * (Math.log(totalReg) / Math.log(2))); // comparação teórica
-                movEOrd = compEOrd; // movimento teórico ≈ comparações
+                compEOrd = (int) (totalReg * (Math.log(totalReg) / Math.log(2)));
+                movEOrd = compEOrd;
 
-                 
                 arqRev.copiarArquivo(auxRev);
                 auxRev.initComp();
                 auxRev.initMov();
@@ -318,7 +314,6 @@ public class Principal {
                 compERev = (int) (totalReg * (Math.log(totalReg) / Math.log(2)));
                 movERev = compERev;
 
-                 
                 arqRand.copiarArquivo(auxRand);
                 auxRand.initComp();
                 auxRand.initMov();
@@ -339,7 +334,6 @@ public class Principal {
                 // =================== SHELL SORT ===================
                 System.out.println("SHELL SORT...");
 
-                 
                 arqOrd.copiarArquivo(auxOrd);
                 auxOrd.initComp();
                 auxOrd.initMov();
@@ -347,12 +341,7 @@ public class Principal {
                 auxOrd.shellSort();
                 fim = System.currentTimeMillis();
                 tempoOrd = (fim - inicio) / 1000;
-                compOrd = auxOrd.getComp();
-                movOrd = auxOrd.getMov();
-                compEOrd = (int) (totalReg * Math.sqrt(totalReg)); // estimativa teórica
-                movEOrd = compEOrd;
 
-                 
                 arqRev.copiarArquivo(auxRev);
                 auxRev.initComp();
                 auxRev.initMov();
@@ -360,12 +349,7 @@ public class Principal {
                 auxRev.shellSort();
                 fim = System.currentTimeMillis();
                 tempoRev = (fim - inicio) / 1000;
-                compRev = auxRev.getComp();
-                movRev = auxRev.getMov();
-                compERev = (int) (totalReg * Math.sqrt(totalReg));
-                movERev = compERev;
 
-                 
                 arqRand.copiarArquivo(auxRand);
                 auxRand.initComp();
                 auxRand.initMov();
@@ -373,15 +357,11 @@ public class Principal {
                 auxRand.shellSort();
                 fim = System.currentTimeMillis();
                 tempoRand = (fim - inicio) / 1000;
-                compRand = auxRand.getComp();
-                movRand = auxRand.getMov();
-                compERand = (int) (totalReg * Math.sqrt(totalReg));
-                movERand = compERand;
 
                 escreverLinha("Shell Sort",
-                                compOrd, compEOrd, movOrd, movEOrd, tempoOrd,
-                                compRev, compERev, movRev, movERev, tempoRev,
-                                compRand, compERand, movRand, movERand, tempoRand);
+                                auxOrd.getComp(), 0, auxOrd.getMov(), 0, tempoOrd,
+                                auxRev.getComp(), 0, auxRev.getMov(), 0, tempoRev,
+                                auxRand.getComp(), 0, auxRand.getMov(), 0, tempoRand);
 
                 // =================== QUICK SORT SEM PIVO ===================
                 System.out.println("QUICK SORT SEM PIVO...");
@@ -689,7 +669,7 @@ public class Principal {
 
         public void executarTestes() throws IOException {
                 System.out.println("###### TESTE ######");
-                this.arqRand.gerarArquivoRandomico(this.tam);
+                arqRand.gerarArquivoRandomico(totalReg);
 
                 String[] ordenacoes = {
                                 "Inserção Direta", "Inserção Binária", "Seleção Direta",
@@ -699,7 +679,7 @@ public class Principal {
                 };
 
                 for (String ordenacao : ordenacoes) {
-                        teste(this.tam, this.arqRand, this.auxRand, ordenacao);
+                        teste(totalReg, arqRand, auxRand, ordenacao);
                 }
         }
 

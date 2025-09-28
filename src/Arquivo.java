@@ -614,10 +614,8 @@ public class Arquivo {
             vet[digito]--;
         }
 
-
         arqAux.copiarArquivo(this);
-    } 
-    
+    }
 
     public void combSort() {
         int TL = filesize(), interval = TL, i;
@@ -910,7 +908,7 @@ public class Arquivo {
     }
 
     public void gerarArquivoOrdenado(int tamanho) throws IOException {
-        this.truncate(0);
+        truncate(0);
 
         Registro reg = new Registro();
 
@@ -921,7 +919,7 @@ public class Arquivo {
     }
 
     public void gerarArquivoReverso(int tamanho) throws IOException {
-        this.truncate(0);
+        truncate(0);
 
         Registro reg = new Registro();
 
@@ -955,11 +953,11 @@ public class Arquivo {
     }
 
     public void copiarArquivo(Arquivo arqDestino) throws IOException {
-        arqDestino.truncate(0); 
+        arqDestino.truncate(0);
 
         Registro reg = new Registro();
         for (int i = 0; i < filesize(); i++) {
-            seekArq(i); 
+            seekArq(i);
             reg.leDoArq(this.arquivo);
 
             arqDestino.seekArq(i);
@@ -968,7 +966,7 @@ public class Arquivo {
     }
 
     public void exibir() {
-        Registro reg = new Registro(); 
+        Registro reg = new Registro();
         seekArq(0);
         for (int i = 0; i < filesize(); i++) {
             reg.leDoArq(getFile());

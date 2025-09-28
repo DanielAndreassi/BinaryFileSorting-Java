@@ -1,11 +1,12 @@
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public class Principal {
         Arquivo arqOrd, arqRev, arqRand, auxOrd, auxRev, auxRand;
         RandomAccessFile arquivo;
-        long inicio, fim, compOrd, movOrd, compRev, movRev, compRand, movRand, tempoOrd, tempoRev,tempoRand;
-        int totalReg = 128;
+        long inicio, fim, compOrd, movOrd, compRev, movRev, compRand, movRand, tempoOrd, tempoRev, tempoRand;
+        int totalReg = 1024;
 
         public Principal() {
                 arqOrd = new Arquivo("ordenado.dat");
@@ -16,7 +17,7 @@ public class Principal {
                 auxRand = new Arquivo("aux_random.dat");
         }
 
-        public void escreverLinha(String ordenacao,
+        private void escreverLinha(String ordenacao,
                         double compOrd, double compEOrd, double movOrd, double movEOrd, double tempoOrd,
                         double compRev, double compERev, double movRev, double movERev, double tempoRev,
                         double compRand, double compERand, double movRand, double movERand, double tempoRand) {
@@ -66,7 +67,6 @@ public class Principal {
                 arqRand.gerarArquivoRandomico(totalReg);
 
                 double compEOrd, movEOrd, compERev, movERev, compERand, movERand;
-
                 // =================== INSERCAO DIRETA ===================
                 System.out.println("INSERCAO DIRETA...");
 
@@ -427,6 +427,68 @@ public class Principal {
                                 auxRev.getComp(), 0, auxRev.getMov(), 0, tempoRev,
                                 auxRand.getComp(), 0, auxRand.getMov(), 0, tempoRand);
 
+                // =================== MERGE SORT (PRIMEIRA IMPLEMENTACAO) ===================
+                System.out.println("MERGE SORT (PRIMEIRA IMPLEMENTACAO)...");
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.mergeSortPI();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.mergeSortPI();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.mergeSortPI();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+
+                escreverLinha("Merge Sort 1",
+                                auxOrd.getComp(), 0, auxOrd.getMov(), 0, tempoOrd,
+                                auxRev.getComp(), 0, auxRev.getMov(), 0, tempoRev,
+                                auxRand.getComp(), 0, auxRand.getMov(), 0, tempoRand);
+
+                // =================== MERGE SORT (SEGUNDA IMPLEMENTACAO) ===================
+                System.out.println("MERGE SORT (SEGUNDA IMPLEMENTACAO)...");
+                arqOrd.copiarArquivo(auxOrd);
+                auxOrd.initComp();
+                auxOrd.initMov();
+                inicio = System.currentTimeMillis();
+                auxOrd.mergeSortSegundaImplementacao();
+                fim = System.currentTimeMillis();
+                tempoOrd = (fim - inicio) / 1000;
+
+                arqRev.copiarArquivo(auxRev);
+                auxRev.initComp();
+                auxRev.initMov();
+                inicio = System.currentTimeMillis();
+                auxRev.mergeSortSegundaImplementacao();
+                fim = System.currentTimeMillis();
+                tempoRev = (fim - inicio) / 1000;
+
+                arqRand.copiarArquivo(auxRand);
+                auxRand.initComp();
+                auxRand.initMov();
+                inicio = System.currentTimeMillis();
+                auxRand.mergeSortSegundaImplementacao();
+                fim = System.currentTimeMillis();
+                tempoRand = (fim - inicio) / 1000;
+
+                escreverLinha("Merge Sort 2",
+                                auxOrd.getComp(), 0, auxOrd.getMov(), 0, tempoOrd,
+                                auxRev.getComp(), 0, auxRev.getMov(), 0, tempoRev,
+                                auxRand.getComp(), 0, auxRand.getMov(), 0, tempoRand);
+
                 // =================== COUNTING SORT ===================
                 System.out.println("COUNTING SORT...");
 
@@ -622,14 +684,14 @@ public class Principal {
 
         // ----------------------------------------------------------------------
 
-        public void gravaStringNoArquivo(String frase) {
+        private void gravaStringNoArquivo(String frase) {
                 try {
                         arquivo.writeBytes(frase);
                 } catch (IOException ignored) {
                 }
         }
 
-        public void escreverCabecalho() {
+        private void escreverCabecalho() {
 
                 String cabecalho = """
                                 +--------------------------+------------------------------------------------------+------------------------------------------------------+------------------------------------------------------+
@@ -643,7 +705,7 @@ public class Principal {
 
         }
 
-        public static String centralizarString(String texto, int larguraCol) {
+        private static String centralizarString(String texto, int larguraCol) {
                 int totalEspacos, esq, dir;
                 String resultado = "";
 
@@ -674,7 +736,8 @@ public class Principal {
                 String[] ordenacoes = {
                                 "Inserção Direta", "Inserção Binária", "Seleção Direta",
                                 "Bubble Sort", "Shake Sort", "Heap Sort", "Shell Sort",
-                                "Quick Sort sem Pivo", "Quick Sort com Pivo", "Counting Sort",
+                                "Quick Sort sem Pivo", "Quick Sort com Pivo", "MergeSort 1", "MergeSort 2",
+                                "Counting Sort",
                                 "Bucket Sort", "Radix Sort", "Comb Sort", "Gnome Sort", "Tim Sort"
                 };
 
@@ -683,7 +746,7 @@ public class Principal {
                 }
         }
 
-        public void teste(int tam, Arquivo arq, Arquivo arqAux, String ordenacao)
+        private void teste(int tam, Arquivo arq, Arquivo arqAux, String ordenacao)
                         throws IOException {
 
                 arqAux.truncate(0);
@@ -705,6 +768,8 @@ public class Principal {
                         case "Shell Sort" -> arqAux.shellSort();
                         case "Quick Sort sem Pivo" -> arqAux.quickSortSemPivo();
                         case "Quick Sort com Pivo" -> arqAux.quickSortComPivo();
+                        case "MergeSort 1" -> arqAux.mergeSortPI();
+                        case "MergeSort 2" -> arqAux.mergeSortSegundaImplementacao();
                         case "Counting Sort" -> arqAux.countingSort();
                         case "Bucket Sort" -> arqAux.bucketSort();
                         case "Radix Sort" -> arqAux.radixSort();
@@ -726,6 +791,21 @@ public class Principal {
                 auxOrd.close();
                 auxRev.close();
                 auxRand.close();
+                System.out.println("Arqs fechados");
+                File file = new File("aux_ordenado.dat");
+                file.delete();
+                file = new File("aux_reverso.dat");
+                file.delete();
+                file = new File("aux_random.dat");
+                file.delete();
+                file = new File("copia.dat");
+                file.delete();
+                file = new File("ordenado.dat");
+                file.delete();
+                file = new File("reverso.dat");
+                file.delete();
+                file = new File("random.dat");
+                file.delete();
         }
 
 }
